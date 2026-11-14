@@ -1,0 +1,77 @@
+name: keycloak-lab
+
+services:
+  # Единая база стенда — актуальная Keycloak 26.x (Quarkus). Пути без /auth.
+  # Импортируются два realm'а: vulnerable (учебные уязвимости) и production (эталон).
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: kc
+    command: ["start-dev", "--import-realm", "--http-port=8080"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      # ВАЖНО: не localhost/127.0.0.1 — иначе Keycloak считает контекст "secure"
+      # и ставит Secure-cookie, из-за чего интерактивный flow ломается по http.
+      # nip.io резолвит *.127.0.0.1.nip.io в 127.0.0.1 (правка /etc/hosts не нужна).
+      KC_HOSTNAME_URL: http://keycloak.127.0.0.1.nip.io:8080
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./realms:/opt/keycloak/data/import:ro
+    networks: [lab]
+
+  # Простое SP-приложение (relying party). Только ходит в Keycloak по OIDC.
+  sp-app:
+    build: ./sp-app
+    container_name: sp-app
+    environment:
+      KC_PUBLIC_URL: http://keycloak.127.0.0.1.nip.io:8080
+      KC_INTERNAL_URL: http://keycloak:8080
+      KC_REALM: vulnerable
+      KC_CLIENT_ID: sp-app
+      KC_CLIENT_SECRET: sp-app-secret
+      REDIRECT_URI: http://app.127.0.0.1.nip.io:8088/callback
+      FLASK_SECRET: dev-not-secret
+    ports:
+      - "8088:5000"
+    depends_on:
+      - keycloak
+    networks: [lab]
+
+  # Уязвимый resource server (модуль 05): принимает alg=none и HS256-with-public-key.
+  vuln-rs:
+    build:
+      context: .
+      dockerfile: vuln-rs/Dockerfile
+    container_name: vuln-rs
+    environment:
+      KC_JWKS_URL: http://keycloak:8080/realms/vulnerable/protocol/openid-connect/certs
+      KC_ISSUER: http://keycloak.127.0.0.1.nip.io:8080/realms/vulnerable
+      MODE: vuln
+    ports:
+      - "8090:8090"
+    depends_on:
+      - keycloak
+    networks: [lab]
+
+  # «Исправленный» RS для сравнения: только RS256 + проверка iss.
+  rs-strict:
+    build:
+      context: .
+      dockerfile: vuln-rs/Dockerfile
+    container_name: rs-strict
+    environment:
+      KC_JWKS_URL: http://keycloak:8080/realms/vulnerable/protocol/openid-connect/certs
+      KC_ISSUER: http://keycloak.127.0.0.1.nip.io:8080/realms/vulnerable
+      MODE: strict
+    ports:
+      - "8091:8090"
+    depends_on:
+      - keycloak
+    networks: [lab]
+
+networks:
+  lab:
+    driver: bridge

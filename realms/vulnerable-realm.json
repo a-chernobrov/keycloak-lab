@@ -1,0 +1,86 @@
+{
+  "realm": "vulnerable",
+  "enabled": true,
+  "displayName": "Vulnerable (training)",
+  "sslRequired": "none",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "bruteForceProtected": false,
+  "accessTokenLifespan": 3600,
+  "ssoSessionIdleTimeout": 2592000,
+  "ssoSessionMaxLifespan": 2592000,
+  "clients": [
+    {
+      "clientId": "sp-app",
+      "name": "sp-app (confidential)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "sp-app-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://app.127.0.0.1.nip.io:8088/*", "http://app.lab:8088/*"],
+      "webOrigins": ["*"],
+      "rootUrl": "http://app.127.0.0.1.nip.io:8088"
+    },
+    {
+      "clientId": "direct-grant",
+      "name": "direct-grant (ROPC)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "direct-grant-secret",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true
+    },
+    {
+      "clientId": "public-spa",
+      "name": "public-spa (no PKCE)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": true,
+      "redirectUris": ["http://app.127.0.0.1.nip.io:8088/*", "http://app.lab:8088/*"],
+      "webOrigins": ["*"],
+      "attributes": {
+        "pkce.code.challenge.method": ""
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "email": "alice@lab.local",
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Victim",
+      "credentials": [
+        { "type": "password", "value": "Passw0rd!", "temporary": false },
+        { "type": "otp", "userLabel": "totp",
+          "secretData": "{\"value\":\"JBSWY3DPEHPK3PXP\"}",
+          "credentialData": "{\"subType\":\"totp\",\"digits\":6,\"period\":30,\"algorithm\":\"HmacSHA1\"}" }
+      ]
+    },
+    {
+      "username": "mallory",
+      "enabled": true,
+      "email": "mallory@lab.local",
+      "emailVerified": true,
+      "firstName": "Mallory",
+      "lastName": "Attacker",
+      "credentials": [
+        { "type": "password", "value": "Mall0ry!", "temporary": false },
+        { "type": "otp", "userLabel": "totp",
+          "secretData": "{\"value\":\"JBSWY3DPEHPK3PXP\"}",
+          "credentialData": "{\"subType\":\"totp\",\"digits\":6,\"period\":30,\"algorithm\":\"HmacSHA1\"}" }
+      ]
+    }
+  ]
+}

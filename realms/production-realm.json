@@ -1,0 +1,49 @@
+{
+  "realm": "production",
+  "enabled": true,
+  "displayName": "Production (reference / hardened)",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": false,
+  "verifyEmail": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "failureFactor": 5,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "otpPolicyLookAheadWindow": 1,
+  "clients": [
+    {
+      "clientId": "sp-app",
+      "name": "sp-app (confidential, strict)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "sp-app-secret-strong",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://app.127.0.0.1.nip.io:8089/callback", "http://app.lab:8089/callback"],
+      "webOrigins": ["http://app.127.0.0.1.nip.io:8089", "http://app.lab:8089"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "bob",
+      "enabled": true,
+      "email": "bob@lab.local",
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "User",
+      "credentials": [
+        { "type": "password", "value": "Bob_Str0ng!", "temporary": false }
+      ]
+    }
+  ]
+}

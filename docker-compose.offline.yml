@@ -1,0 +1,31 @@
+# Офлайн-режим: без публичного DNS (nip.io). Хосты keycloak.lab / app.lab
+# должны резолвиться в 127.0.0.1 — прописать в /etc/hosts:
+#
+#   127.0.0.1 keycloak.lab
+#   127.0.0.1 app.lab
+#
+# Запуск:
+#   docker compose -f docker-compose.yml -f docker-compose.offline.yml up -d --build
+#
+# И не забыть указать хосты скриптам:
+#   export KC_URL=http://keycloak.lab:8080
+#   export SP_URL=http://app.lab:8088
+#
+# Redirect URI обоих хостов уже разрешены в realms/*.json, править их не нужно.
+services:
+  keycloak:
+    environment:
+      KC_HOSTNAME_URL: http://keycloak.lab:8080
+
+  sp-app:
+    environment:
+      KC_PUBLIC_URL: http://keycloak.lab:8080
+      REDIRECT_URI: http://app.lab:8088/callback
+
+  vuln-rs:
+    environment:
+      KC_ISSUER: http://keycloak.lab:8080/realms/vulnerable
+
+  rs-strict:
+    environment:
+      KC_ISSUER: http://keycloak.lab:8080/realms/vulnerable
